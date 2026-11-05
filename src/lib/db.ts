@@ -170,7 +170,28 @@ function useCollection<T>(fid: string | null, name: string, order?: string): T[]
   useEffect(() => {
     if (!fs || !fid) return;
     const q = order ? query(sub(fid, name), orderBy(order)) : sub(fid, name);
-    return onSnapshot(q, { includeMetadataChanges: false }, (snap) => setRows(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as T)));
+    // Odmah nakon izrade obitelji poslužitelj može nakratko odbiti čitanje; tada pokušaj ponovno.
+    let stop = () => {};
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let tries = 0;
+    const listen = () => {
+      stop = onSnapshot(
+        q,
+        { includeMetadataChanges: false },
+        (snap) => {
+          tries = 0;
+          setRows(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as T));
+        },
+        () => {
+          if (tries++ < 10) timer = setTimeout(listen, 1500);
+        }
+      );
+    };
+    listen();
+    return () => {
+      clearTimeout(timer);
+      stop();
+    };
   }, [fid, name, order]);
   return rows;
 }
