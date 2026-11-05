@@ -1,0 +1,24 @@
+rules_version = '2';
+// Pristup imaju samo prijavljeni članovi obitelji (provjerena e-mail adresa na popisu članova).
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    function email() {
+      return request.auth.token.email.lower();
+    }
+    function isMember(fid) {
+      return signedIn() && email() in get(/databases/$(database)/documents/families/$(fid)).data.members;
+    }
+    match /families/{fid} {
+      allow read: if signedIn() && email() in resource.data.members;
+      allow create: if signedIn() && request.resource.data.members == [email()];
+      allow update: if signedIn() && email() in resource.data.members && request.resource.data.members.size() > 0;
+      allow delete: if false;
+      match /{coll}/{id} {
+        allow read, write: if isMember(fid);
+      }
+    }
+  }
+}
