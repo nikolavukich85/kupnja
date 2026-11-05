@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/* Paleta: kamen, more, terakota, maslina */
+@theme {
+  --color-stone-bg: var(--bg);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-sea: var(--sea);
+  --color-sea-soft: var(--sea-soft);
+  --color-terra: var(--terra);
+  --color-terra-soft: var(--terra-soft);
+  --color-olive: var(--olive);
+  --color-olive-soft: var(--olive-soft);
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+:root {
+  --bg: #f4f0e8;
+  --paper: #fffdf8;
+  --ink: #23292e;
+  --muted: #6b7076;
+  --line: #e2dccf;
+  --sea: #1f5f7a;
+  --sea-soft: #e3eef2;
+  --terra: #b5532f;
+  --terra-soft: #f6e5dc;
+  --olive: #5f7330;
+  --olive-soft: #e9eedb;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171b1e;
+    --paper: #20262a;
+    --ink: #ece8e1;
+    --muted: #9aa1a7;
+    --line: #333b40;
+    --sea: #6fb3cf;
+    --sea-soft: #1d3540;
+    --terra: #e08a66;
+    --terra-soft: #3d2a22;
+    --olive: #a8bd6c;
+    --olive-soft: #2c3420;
+    color-scheme: dark;
+  }
+}
+
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+
+@utility card {
+  @apply min-w-0 rounded-2xl border border-line bg-paper p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)];
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
+}
+
+@utility btn-primary {
+  @apply btn bg-sea text-paper hover:brightness-110;
+}
+
+@utility btn-terra {
+  @apply btn bg-terra text-paper hover:brightness-110;
+}
+
+@utility btn-ghost {
+  @apply btn border border-line bg-paper text-ink hover:bg-stone-bg;
+}
+
+@utility btn-danger {
+  @apply btn border border-terra/40 text-terra hover:bg-terra-soft;
+}
+
+@utility input {
+  @apply w-full rounded-xl border border-line bg-paper px-3 py-2 text-[15px] text-ink outline-none placeholder:text-muted/70 focus:border-sea focus:ring-2 focus:ring-sea/20;
+}
+
+@utility label {
+  @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-muted;
+}
+
+@utility chip {
+  @apply inline-flex items-center rounded-full bg-stone-bg px-2.5 py-0.5 text-xs text-muted;
+}
+
+@utility h-title {
+  @apply font-serif text-3xl leading-tight text-ink;
+}
+
+@utility h-section {
+  @apply font-serif text-xl text-ink;
+}
+
+@utility link {
+  @apply text-sea underline-offset-2 hover:underline;
+}
+
+kbd { @apply rounded border border-line bg-stone-bg px-1.5 py-0.5 font-sans text-[11px] text-muted; }
+
+@utility pill {
+  @apply inline-flex items-center rounded-full border border-line bg-paper px-3 py-1 text-sm text-ink transition cursor-pointer active:scale-[0.97];
+}
+
+@utility pill-on {
+  @apply border-sea bg-sea text-paper;
+}
+
+html, body { overscroll-behavior-y: none; }
+button { -webkit-tap-highlight-color: transparent; }
