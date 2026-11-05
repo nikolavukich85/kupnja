@@ -1,0 +1,51 @@
+# Svaki dan preuzme svježe službene cjenike i ponovno objavi aplikaciju na GitHub Pages.
+name: Objava
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * *" # svaki dan oko 7-8 h po našem vremenu
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cijene
+        # Ako preuzimanje ne uspije, aplikacija se ipak objavi (bez akcija za taj dan).
+        continue-on-error: true
+        run: python scripts/prices.py public/data/prices.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
