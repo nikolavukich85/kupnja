@@ -28,6 +28,12 @@ const db: Record<string, Record<string, unknown>[]> = {
     { id: "s2", name: "Kava", category: "", store: "", productId: "lidl:2", intervalDays: 14, history: [ago(15)], paused: false },
     { id: "s3", name: "Šampon", category: "", store: "mueller", productId: null, intervalDays: 30, history: [ago(5)], paused: false },
   ],
+  money: [
+    { id: "m1", type: "in", amount: 1450, category: "placa", note: "Plaća – Nikola", date: ago(5), by: "nikola@example.com", billId: null },
+    { id: "m2", type: "out", amount: 63.4, category: "hrana", note: "Lidl", date: ago(2), by: "marina@example.com", billId: null },
+    { id: "m3", type: "out", amount: 18, category: "izlasci", note: "Sladoled", date: ago(1), by: "nikola@example.com", billId: null },
+  ],
+  bills: [],
   coupons: [
     { id: "c1", store: "mueller", title: "−20 % na kozmetiku", code: "JESEN20", value: "−20 %", validUntil: ago(-2), image: "", used: false },
   ],
@@ -114,6 +120,19 @@ export async function addCoupon(_f: string, d: Omit<Coupon, "id" | "used">) {
 }
 export const updateCoupon = async (_f: string, id: string, d: Partial<Coupon>) => upd("coupons", id, d);
 export const deleteCoupon = async (_f: string, id: string) => del("coupons", id);
+export const useRows = <T,>(_f: string | null, name: string) => useCol<T>(name);
+export async function addRow(_f: string, name: string, d: object) {
+  const id = `r${n++}`;
+  db[name].push({ id, ...d });
+  emit();
+  return id;
+}
+export const updateRow = async (_f: string, name: string, id: string, d: object) => upd(name, id, d);
+export const deleteRow = async (_f: string, name: string, id: string) => del(name, id);
+export async function addRows(_f: string, name: string, rows: object[]) {
+  for (const r of rows) db[name].push({ id: `r${n++}`, ...r });
+  emit();
+}
 export async function exportFamily(f: Family) {
   return { format: "kupnja/1", family: f, ...db };
 }
