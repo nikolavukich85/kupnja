@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { User } from "firebase/auth";
-import { useCoupons, useItems, useStaples, type Coupon, type Family, type Item, type Staple, type Store } from "./db";
+import { useCoupons, useItems, useRows, useStaples, type Coupon, type Family, type Item, type Staple, type Store } from "./db";
+import type { Bill, Entry } from "./money";
 import { loadPrices, type PriceData } from "./prices";
 
 type Ctx = {
@@ -12,6 +13,8 @@ type Ctx = {
   items: Item[] | null;
   staples: Staple[] | null;
   coupons: Coupon[] | null;
+  money: Entry[] | null;
+  bills: Bill[] | null;
   prices: PriceData | null;
   storeName: (id: string) => string;
   chainName: (code: string) => string;
@@ -23,6 +26,8 @@ export function AppProvider({ user, family, children }: { user: User; family: Fa
   const items = useItems(family.id);
   const staples = useStaples(family.id);
   const coupons = useCoupons(family.id);
+  const money = useRows<Entry>(family.id, "money");
+  const bills = useRows<Bill>(family.id, "bills");
   const [prices, setPrices] = useState<PriceData | null>(null);
   useEffect(() => {
     loadPrices().then(setPrices);
@@ -39,11 +44,13 @@ export function AppProvider({ user, family, children }: { user: User; family: Fa
       items,
       staples,
       coupons,
+      money,
+      bills,
       prices,
       storeName: (id) => stores.find((s) => s.id === id)?.name ?? "",
       chainName: (code) => stores.find((s) => s.chain === code)?.name ?? prices?.chains[code]?.name ?? code,
     };
-  }, [user, family, items, staples, coupons, prices]);
+  }, [user, family, items, staples, coupons, money, bills, prices]);
   return <C.Provider value={value}>{children}</C.Provider>;
 }
 
