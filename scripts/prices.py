@@ -85,6 +85,11 @@ def process(zip_path: str, date: str | None) -> dict:
                 price, special, best30 = num(p.get("price")), num(p.get("special_price")), num(p.get("best_price_30"))
                 if price is None and special is None:
                     continue
+                # Neki lanci (npr. Lidl, Tommy) za vrijeme akcije u "price" upisuju sniženu cijenu,
+                # a u "best_price_30" najnižu cijenu prije sniženja (obveza iz Zakona o zaštiti potrošača).
+                # Ako je trenutna cijena niža od te, to je akcija: redovna = best30, akcijska = price.
+                if special is None and price is not None and best30 is not None and price < best30 - 0.005:
+                    special, price = price, best30
                 d = per.setdefault(p["product_id"], {"prices": [], "special": [], "best30": [], "sale": ""})
                 if price is not None:
                     d["prices"].append(price)
