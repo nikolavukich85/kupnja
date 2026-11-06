@@ -268,9 +268,24 @@ export async function addCoupon(fid: string, data: Omit<Coupon, "id" | "used">) 
 export const updateCoupon = (fid: string, id: string, data: Partial<Coupon>) => updateDoc(doc(fs!, "families", fid, "coupons", id), data);
 export const deleteCoupon = (fid: string, id: string) => deleteDoc(doc(fs!, "families", fid, "coupons", id));
 
+// ---------- Općenito (koristi ga i dio „Novac") ----------
+
+export const useRows = <T,>(fid: string | null, name: string) => useCollection<T>(fid, name);
+export async function addRow(fid: string, name: string, data: object) {
+  const ref = await addDoc(sub(fid, name), { ...data, createdAt: serverTimestamp() });
+  return ref.id;
+}
+export const updateRow = (fid: string, name: string, id: string, data: object) => updateDoc(doc(fs!, "families", fid, name, id), data);
+export const deleteRow = (fid: string, name: string, id: string) => deleteDoc(doc(fs!, "families", fid, name, id));
+export async function addRows(fid: string, name: string, rows: object[]) {
+  const b = writeBatch(fs!);
+  for (const r of rows) b.set(doc(sub(fid, name)), { ...r, createdAt: serverTimestamp() });
+  await b.commit();
+}
+
 /** Izvoz svih podataka obitelji (sigurnosna kopija). */
 export async function exportFamily(f: Family) {
   const out: Record<string, unknown> = { format: "kupnja/1", exportedAt: new Date().toISOString(), family: f };
-  for (const name of ["items", "staples", "coupons"]) out[name] = (await getDocs(sub(f.id, name))).docs.map((d) => ({ id: d.id, ...d.data() }));
+  for (const name of ["items", "staples", "coupons", "money", "bills"]) out[name] = (await getDocs(sub(f.id, name))).docs.map((d) => ({ id: d.id, ...d.data() }));
   return out;
 }
