@@ -9,6 +9,8 @@ import StaplesPage from "./pages/StaplesPage";
 import DealsPage from "./pages/DealsPage";
 import CouponsPage, { couponState } from "./pages/CouponsPage";
 import SettingsPage from "./pages/SettingsPage";
+import MoneyPage from "./pages/MoneyPage";
+import { dueCount } from "./lib/money";
 
 function Center({ children }: { children: React.ReactNode }) {
   return (
@@ -98,10 +100,11 @@ function Tab({ to, icon, label, badge }: { to: string; icon: string; label: stri
 }
 
 function Shell() {
-  const { items, staples, coupons } = useApp();
+  const { items, staples, coupons, bills } = useApp();
   const open = items?.filter((i) => !i.done).length ?? 0;
   const onList = useMemo(() => new Set(items?.filter((i) => !i.done && i.stapleId).map((i) => i.stapleId)), [items]);
   const due = staples?.filter((s) => !s.paused && !onList.has(s.id) && dueState(s.history, s.intervalDays).due).length ?? 0;
+  const toPay = dueCount(bills);
   const expiring = coupons?.filter((c) => !c.used && couponState(c).soon).length ?? 0;
   return (
     <div className="mx-auto min-h-dvh max-w-xl">
@@ -111,6 +114,7 @@ function Shell() {
           <Route path="/stalno" element={<StaplesPage />} />
           <Route path="/akcije" element={<DealsPage />} />
           <Route path="/kuponi" element={<CouponsPage />} />
+          <Route path="/novac" element={<MoneyPage />} />
           <Route path="/postavke" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -121,6 +125,7 @@ function Shell() {
           <Tab to="/stalno" icon="🔁" label="Stalno" badge={due} />
           <Tab to="/akcije" icon="🏷️" label="Akcije" />
           <Tab to="/kuponi" icon="🎟️" label="Kuponi" badge={expiring} />
+          <Tab to="/novac" icon="💶" label="Novac" badge={toPay} />
           <Tab to="/postavke" icon="⚙️" label="Postavke" />
         </div>
       </nav>
